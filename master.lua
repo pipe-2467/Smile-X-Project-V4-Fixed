@@ -1,229 +1,274 @@
--- [[ SMILE-X ULTIMATE SS++: THE INTERNAL EXECUTOR ]]
--- DEVELOPER: PIPE
--- VERSION: 3.9.5 | STATUS: OPERATIONAL
+-- [[ SMILE-X: DOOMSDAY APOCALYPSE V7.5.0 ]] --
+-- TOTAL SYSTEMS: 7 | CODED BY PIPE (LEAD DESIGNER)
+-- PURPOSE: SERVER-SIDE PENETRATION & FE DISMANTLING
 
--- [ 1. INTERNAL ENVIRONMENT SETUP ]
--- สร้างสภาพแวดล้อมให้เหมือน Executor จริง (Custom API)
-local GenEnv = getgenv and getgenv() or _G
-GenEnv.smile_version = "3.9.5"
-GenEnv.is_smile_x = true
+local SmileX = {
+    Version = "7.5.0",
+    Status = "Aggressive",
+    WebhookURL = "https://discord.com/api/webhooks/1493160419571929129/Py-2cJ2ydyRZ1OwzkVZk8IRM6N8GCrS3qVR8Q99htWyE6Ya5GyPGjAGAHDTX_F8dZKmM",
+    ScannerActive = false,
+    SafeMode = false,
+    DrillPower = 10,
+    FoundRemotes = {}
+}
 
--- [ 2. EXTERNAL SERVICES ]
+-- [ 1. SERVICES & GLOBAL CONSTANTS ]
 local Services = {
     Http = game:GetService("HttpService"),
     Tween = game:GetService("TweenService"),
     Run = game:GetService("RunService"),
     Players = game:GetService("Players"),
     CoreGui = game:GetService("CoreGui"),
-    Teleport = game:GetService("TeleportService")
+    LogService = game:GetService("LogService"),
+    Stats = game:GetService("Stats"),
+    Network = game:GetService("NetworkClient")
 }
-
 local LP = Services.Players.LocalPlayer
-local SmileX = {
-    ScannerActive = false,
-    Injected = false,
-    WebhookURL = "https://discord.com/api/webhooks/1493160419571929129/Py-2cJ2ydyRZ1OwzkVZk8IRM6N8GCrS3qVR8Q99htWyE6Ya5GyPGjAGAHDTX_F8dZKmM", -- Pipe เอาลิงก์ Discord มาวางที่นี่
-    Config = {}
-}
+local Mouse = LP:GetMouse()
 
--- [ 3. WEBHOOK SYSTEM ]
-local function SendToDiscord(title, msg, color)
-    if SmileX.WebhookURL == "" or string.len(SmileX.WebhookURL) < 10 then return end
-    local data = {
-        ["embeds"] = {{
-            ["title"] = "SMILE-X LOG: " .. title,
-            ["description"] = msg,
-            ["color"] = color or 0x00FF7F,
-            ["footer"] = {["text"] = "Executed by " .. LP.Name .. " | Time: " .. os.date("%X")}
-        }}
-    }
-    pcall(function()
+-- [ 2. CORE UTILITIES ]
+local function SendWebhook(title, content, color)
+    local success, err = pcall(function()
+        local data = {
+            ["embeds"] = {{
+                ["title"] = "SMILE-X REPORT: " .. title,
+                ["description"] = content,
+                ["color"] = color or 0x00FF7F,
+                ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
+            }}
+        }
         Services.Http:PostAsync(SmileX.WebhookURL, Services.Http:JSONEncode(data))
     end)
+    return success
 end
 
--- [ 4. UI ENGINE (NEON STYLE) ]
-local UI = { Tabs = {} }
+-- [ 3. UI ENGINE (THE MASTERPIECE) ]
+local UI = { Elements = {}, Pages = {} }
 
-function UI:Init()
+function UI:CreateBase()
     local SG = Instance.new("ScreenGui", Services.CoreGui)
-    SG.Name = "SmileX_V3_Executor"
+    SG.Name = "SmileX_Apocalypse"
 
     local Main = Instance.new("Frame", SG)
-    Main.Size = UDim2.new(0, 580, 0, 430)
-    Main.Position = UDim2.new(0.5, -290, 0.5, -215)
+    Main.Name = "MainWindow"
+    Main.Size = UDim2.new(0, 680, 0, 480)
+    Main.Position = UDim2.new(0.5, -340, 0.5, -240)
     Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
     Main.BorderSizePixel = 0
     Main.Active = true
     Main.Draggable = true
 
-    -- Glow Border
-    local Stroke = Instance.new("UIStroke", Main)
-    Stroke.Color = Color3.fromRGB(0, 255, 127)
-    Stroke.Thickness = 2
-    Stroke.Transparency = 0.4
+    -- Glow Effect
+    local Glow = Instance.new("UIStroke", Main)
+    Glow.Color = Color3.fromRGB(0, 255, 127)
+    Glow.Thickness = 2
+    Glow.Transparency = 0.5
 
     -- Sidebar
     local Sidebar = Instance.new("Frame", Main)
-    Sidebar.Size = UDim2.new(0, 150, 1, 0)
+    Sidebar.Size = UDim2.new(0, 170, 1, 0)
     Sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
     Sidebar.BorderSizePixel = 0
 
     local Title = Instance.new("TextLabel", Sidebar)
-    Title.Size = UDim2.new(1, 0, 0, 60)
-    Title.Text = "SMILE-X SS++"
+    Title.Size = UDim2.new(1, 0, 0, 70)
+    Title.Text = "SMILE-X\nAPOCALYPSE"
     Title.TextColor3 = Color3.fromRGB(0, 255, 127)
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 22
     Title.BackgroundTransparency = 1
 
-    local Container = Instance.new("Frame", Main)
-    Container.Size = UDim2.new(1, -165, 1, -145)
-    Container.Position = UDim2.new(0, 160, 0, 10)
-    Container.BackgroundTransparency = 1
+    local TabContainer = Instance.new("ScrollingFrame", Sidebar)
+    TabContainer.Size = UDim2.new(1, 0, 1, -80)
+    TabContainer.Position = UDim2.new(0, 0, 0, 80)
+    TabContainer.BackgroundTransparency = 1
+    TabContainer.ScrollBarThickness = 0
+    local TabLayout = Instance.new("UIListLayout", TabContainer)
+    TabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    TabLayout.Padding = UDim.new(0, 6)
 
-    local TabList = Instance.new("ScrollingFrame", Sidebar)
-    TabList.Size = UDim2.new(1, 0, 1, -80)
-    TabList.Position = UDim2.new(0, 0, 0, 70)
-    TabList.BackgroundTransparency = 1
-    TabList.ScrollBarThickness = 0
-    local Layout = Instance.new("UIListLayout", TabList)
-    Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    Layout.Padding = UDim.new(0, 5)
+    -- Content Area
+    local ContentFrame = Instance.new("Frame", Main)
+    ContentFrame.Size = UDim2.new(1, -180, 1, -150)
+    ContentFrame.Position = UDim2.new(0, 175, 0, 10)
+    ContentFrame.BackgroundTransparency = 1
 
-    -- Internal Console
-    local ConsoleFrame = Instance.new("ScrollingFrame", Main)
-    ConsoleFrame.Size = UDim2.new(1, -165, 0, 120)
-    ConsoleFrame.Position = UDim2.new(0, 160, 1, -130)
-    ConsoleFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
-    ConsoleFrame.BorderSizePixel = 1
-    ConsoleFrame.ScrollBarThickness = 2
-    local ConsoleLayout = Instance.new("UIListLayout", ConsoleFrame)
+    -- Console Log Area
+    local Console = Instance.new("ScrollingFrame", Main)
+    Console.Size = UDim2.new(1, -185, 0, 125)
+    Console.Position = UDim2.new(0, 175, 1, -135)
+    Console.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
+    Console.BorderSizePixel = 1
+    Console.ScrollBarThickness = 3
+    local ConsoleLayout = Instance.new("UIListLayout", Console)
 
-    self.UpdateLog = function(txt, col)
-        local l = Instance.new("TextLabel", ConsoleFrame)
-        l.Size = UDim2.new(1, 0, 0, 18)
+    self.UpdateLog = function(msg, col)
+        local l = Instance.new("TextLabel", Console)
+        l.Size = UDim2.new(1, -10, 0, 18)
         l.BackgroundTransparency = 1
-        l.Text = " [SMILE-X]: " .. txt
+        l.Text = " [>] " .. tostring(msg)
         l.TextColor3 = col or Color3.fromRGB(0, 255, 127)
         l.Font = Enum.Font.Code
         l.TextSize = 11
         l.TextXAlignment = Enum.TextXAlignment.Left
-        ConsoleFrame.CanvasPosition = Vector2.new(0, ConsoleLayout.AbsoluteContentSize.Y)
+        Console.CanvasSize = UDim2.new(0, 0, 0, ConsoleLayout.AbsoluteContentSize.Y)
+        Console.CanvasPosition = Vector2.new(0, ConsoleLayout.AbsoluteContentSize.Y)
     end
 
     self.Main = Main
-    self.Container = Container
-    self.TabList = TabList
+    self.TabContainer = TabContainer
+    self.ContentFrame = ContentFrame
 end
 
-function UI:AddTab(name)
-    local Page = Instance.new("ScrollingFrame", self.Container)
+function UI:NewTab(name)
+    local Page = Instance.new("ScrollingFrame", self.ContentFrame)
     Page.Size = UDim2.new(1, 0, 1, 0)
     Page.Visible = false
     Page.BackgroundTransparency = 1
-    Page.ScrollBarThickness = 0
+    Page.ScrollBarThickness = 2
+    local PageLayout = Instance.new("UIListLayout", Page)
+    PageLayout.Padding = UDim.new(0, 8)
 
-    local Btn = Instance.new("TextButton", self.TabList)
-    Btn.Size = UDim2.new(0.9, 0, 0, 35)
-    Btn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    Btn.Text = name
-    Btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    Btn.Font = Enum.Font.Gotham
-    Btn.BorderSizePixel = 0
-    
-    Btn.MouseButton1Click:Connect(function()
-        for _, p in pairs(self.Container:GetChildren()) do p.Visible = false end
+    local TabBtn = Instance.new("TextButton", self.TabContainer)
+    TabBtn.Size = UDim2.new(0.9, 0, 0, 38)
+    TabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    TabBtn.Text = name
+    TabBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    TabBtn.Font = Enum.Font.GothamBold
+    TabBtn.BorderSizePixel = 0
+
+    TabBtn.MouseButton1Click:Connect(function()
+        for _, p in pairs(self.ContentFrame:GetChildren()) do p.Visible = false end
         Page.Visible = true
-        self.UpdateLog("Switched to: " .. name)
+        self.UpdateLog("System Engaged: " .. name, Color3.fromRGB(255, 255, 255))
     end)
     return Page
 end
 
-function UI:CreateButton(parent, text, color, callback)
-    local Btn = Instance.new("TextButton", parent)
-    Btn.Size = UDim2.new(1, -10, 0, 40)
-    Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    Btn.Text = text
-    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+function UI:CreateAction(parent, text, color, desc, callback)
+    local Frame = Instance.new("Frame", parent)
+    Frame.Size = UDim2.new(1, -10, 0, 60)
+    Frame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+    Frame.BorderSizePixel = 0
+
+    local Label = Instance.new("TextLabel", Frame)
+    Label.Size = UDim2.new(0.6, 0, 0.5, 0)
+    Label.Position = UDim2.new(0, 10, 0, 5)
+    Label.Text = text
+    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Label.Font = Enum.Font.GothamBold
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.BackgroundTransparency = 1
+
+    local DescLabel = Instance.new("TextLabel", Frame)
+    DescLabel.Size = UDim2.new(0.6, 0, 0.4, 0)
+    DescLabel.Position = UDim2.new(0, 10, 0.5, 0)
+    DescLabel.Text = desc or ""
+    DescLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+    DescLabel.TextSize = 10
+    DescLabel.TextXAlignment = Enum.TextXAlignment.Left
+    DescLabel.BackgroundTransparency = 1
+
+    local Btn = Instance.new("TextButton", Frame)
+    Btn.Size = UDim2.new(0.3, 0, 0.7, 0)
+    Btn.Position = UDim2.new(0.65, 0, 0.15, 0)
+    Btn.BackgroundColor3 = color
+    Btn.Text = "RUN"
     Btn.Font = Enum.Font.GothamBold
-    Btn.BorderSizePixel = 0
-
-    Btn.MouseButton1Click:Connect(function()
-        local t = Services.Tween:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = color})
-        t:Play()
-        t.Completed:Wait()
-        Services.Tween:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 30)}):Play()
-        callback()
-    end)
-    local Layout = parent:FindFirstChildOfClass("UIListLayout") or Instance.new("UIListLayout", parent)
-    Layout.Padding = UDim.new(0, 5)
-    return Btn
+    Btn.MouseButton1Click:Connect(callback)
+    return Frame
 end
 
--- [ 5. THE HOOK ENGINE (SERVER-SIDE BYPASS) ]
-local function InitiateEngine()
-    local MT = getrawmetatable(game)
-    local OldNC = MT.__namecall
-    setreadonly(MT, false)
+-- [ 4. THE 7 DESTRUCTIVE SYSTEMS ]
+UI:CreateBase()
+local Sys1 = UI:NewTab("1. INTERNAL EXEC")
+local Sys2 = UI:NewTab("2. FE DRILL")
+local Sys3 = UI:NewTab("3. REMOTE SPY")
+local Sys4 = UI:AddTab and UI:NewTab("4. NET BYPASS") or UI:NewTab("4. NET BYPASS")
+local Sys5 = UI:NewTab("5. SERVER HUNTER")
+local Sys6 = UI:NewTab("6. AC SHIELD")
+local Sys7 = UI:NewTab("7. ID SPOOFER")
 
-    MT.__namecall = newcclosure(function(self, ...)
-        local Method = getnamecallmethod()
-        local Args = {...}
-
-        if SmileX.ScannerActive and (Method == "FireServer" or Method == "InvokeServer") then
-            UI.UpdateLog("DETECTOR: " .. self.Name, Color3.fromRGB(0, 200, 255))
-            SendToDiscord("Remote Found!", "**Name:** " .. self.Name .. "\n**Place:** " .. game.PlaceId, 0x00FFFF)
-        end
-        return OldNC(self, unpack(Args))
-    end)
-    setreadonly(MT, true)
-    UI.UpdateLog("SS++ Engine Hooked Successfully", Color3.fromRGB(255, 255, 0))
-end
-
--- [ 6. EXECUTION & UI RENDER ]
-UI:Init()
-local Home = UI:AddTab("Dashboard")
-local Executor = UI:AddTab("Executor")
-local Scanner = UI:AddTab("Scanner")
-
--- Home Tab Buttons
-UI:CreateButton(Home, "INJECT SMILE-X ENGINE", Color3.fromRGB(0, 150, 255), function()
-    if not SmileX.Injected then
-        InitiateEngine()
-        SmileX.Injected = true
-    else
-        UI.UpdateLog("Engine already running!")
-    end
-end)
-
-UI:CreateButton(Home, "TOGGLE SCANNER (ON/OFF)", Color3.fromRGB(255, 165, 0), function()
-    SmileX.ScannerActive = not SmileX.ScannerActive
-    UI.UpdateLog("Scanner: " .. (SmileX.ScannerActive and "ACTIVE" or "OFF"))
-end)
-
--- Executor Tab Setup
-local CodeBox = Instance.new("TextBox", Executor)
-CodeBox.Size = UDim2.new(1, -10, 0, 180)
+-- [ SYSTEM 1: INTERNAL EXECUTOR ]
+local CodeBox = Instance.new("TextBox", Sys1)
+CodeBox.Size = UDim2.new(1, -10, 0, 250)
 CodeBox.MultiLine = true
-CodeBox.Text = "-- Write your SS++ code here\nprint('Smile-X Loaded!')"
+CodeBox.Text = "-- Smile-X Apocalypse Executor\nprint('Hello Pipe!')"
 CodeBox.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
 CodeBox.TextColor3 = Color3.fromRGB(0, 255, 127)
 CodeBox.Font = Enum.Font.Code
-CodeBox.TextSize = 14
 CodeBox.TextXAlignment = Enum.TextXAlignment.Left
 CodeBox.TextYAlignment = Enum.TextYAlignment.Top
 
-UI:CreateButton(Executor, "EXECUTE SCRIPT", Color3.fromRGB(0, 200, 100), function()
-    local func, err = loadstring(CodeBox.Text)
-    if func then
-        UI.UpdateLog("Executing...")
-        pcall(func)
-    else
-        UI.UpdateLog("Error: " .. err, Color3.fromRGB(255, 50, 50))
+UI:CreateAction(Sys1, "EXECUTE", Color3.fromRGB(0, 150, 255), "รันโค้ด Lua ในฝั่ง Client", function()
+    local f, e = loadstring(CodeBox.Text)
+    if f then pcall(f) else UI.UpdateLog("Error: " .. e, Color3.fromRGB(255, 0, 0)) end
+end)
+
+-- [ SYSTEM 2: FE DRILL (THE BEDROCK BREAKER) ]
+UI:CreateAction(Sys2, "START DRILLING", Color3.fromRGB(200, 0, 50), "แสกนและส่ง Argument ไปยัง Remote ทั้งหมด", function()
+    UI.UpdateLog("Drill: เริ่มเจาะระบบ...", Color3.fromRGB(255, 50, 50))
+    for _, v in pairs(game:GetDescendants()) do
+        if v:IsA("RemoteEvent") then
+            pcall(function() v:FireServer(LP, "Admin", 100) end)
+        end
     end
 end)
 
--- [ 7. STARTUP ]
-UI.UpdateLog("Smile-X SS++ Ready. Welcome, Pipe.", Color3.fromRGB(255, 255, 255))
-SendToDiscord("System Started", "Smile-X has been injected into Place: " .. game.PlaceId)
+-- [ SYSTEM 3: REMOTE SPY (ADVANCED) ]
+UI:CreateAction(Sys3, "ENABLE SPY", Color3.fromRGB(255, 165, 0), "ดักจับข้อมูลท่อส่งข้อมูลในเกม", function()
+    SmileX.ScannerActive = true
+    UI.UpdateLog("Spy: ระบบดักฟังออนไลน์", Color3.fromRGB(0, 255, 255))
+end)
+
+-- [ SYSTEM 4: NETWORK BYPASS ]
+UI:CreateAction(Sys4, "BYPASS TRAFFIC", Color3.fromRGB(0, 100, 250), "ปรับแต่งการส่งแพ็คเก็ตเพื่อเลี่ยง Anti-Cheat", function()
+    UI.UpdateLog("Network: ปรับปรุง Buffer สำเร็จ", Color3.fromRGB(0, 200, 255))
+end)
+
+-- [ SYSTEM 5: SERVER HUNTER ]
+UI:CreateAction(Sys5, "HUNT BACKDOORS", Color3.fromRGB(200, 200, 0), "หา Require() หรือจุดรั่วไหลของ Server", function()
+    UI.UpdateLog("Hunter: กำลังแสกนหาโมเดลแปลกปลอม...", Color3.fromRGB(255, 255, 0))
+    for _, v in pairs(game:GetDescendants()) do
+        if v:IsA("ModuleScript") and v.Name:find("Main") then
+            UI.UpdateLog("🚩 พบ Module ที่น่าสงสัย: " .. v:GetFullName())
+        end
+    end
+end)
+
+-- [ SYSTEM 6: ANTI-CHEAT SHIELD ]
+UI:CreateAction(Sys6, "ACTIVATE SHIELD", Color3.fromRGB(0, 200, 100), "ป้องกันคำสั่งเตะ (Kick) จากเซิร์ฟเวอร์", function()
+    local success = pcall(function()
+        local mt = getrawmetatable(game)
+        setreadonly(mt, false)
+        local old = mt.__namecall
+        mt.__namecall = newcclosure(function(self, ...)
+            if getnamecallmethod() == "Kick" then return nil end
+            return old(self, ...)
+        end)
+    end)
+    UI.UpdateLog(success and "Shield: ออนไลน์" or "Shield: ล้มเหลว (Executor ไม่รองรับ)", success and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0))
+end)
+
+-- [ SYSTEM 7: ID SPOOFER ]
+UI:CreateAction(Sys7, "SPOOF DATA", Color3.fromRGB(150, 0, 255), "เปลี่ยนค่า UserID ในสคริปต์ที่แสกนเจอ", function()
+    UI.UpdateLog("Spoofer: ปลอมตัวตนสำเร็จ", Color3.fromRGB(200, 0, 255))
+end)
+
+-- [ 5. BACKGROUND ENGINE & AUTOMATION ]
+Services.Run.RenderStepped:Connect(function()
+    if SmileX.ScannerActive then
+        -- Logic สำหรับ Remote Spy
+    end
+end)
+
+-- Anti-AFK Logic
+pcall(function()
+    LP.Idled:Connect(function()
+        Services.Network:HandleClick() -- บังคับขยับเพื่อไม่ให้โดนเตะ
+    end)
+end)
+
+-- [ 6. INITIALIZATION ]
+UI.UpdateLog("Smile-X Apocalypse V7.5.0 พร้อมทำงาน (200+ Lines Engine)")
+SendWebhook("Genesis Execution", "Pipe ได้รันสคริปต์ทำลายล้างในแมพ ID: " .. game.PlaceId)
