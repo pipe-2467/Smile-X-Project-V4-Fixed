@@ -1,32 +1,42 @@
 {
-  "system_info": {
-    "name": "Smile-X Ultimate SS++",
-    "version": "3.9.5",
-    "developer": "Pipe",
-    "status": "Operational",
-    "prefix": "!"
+  "Settings": {
+    "Version": "7.5.0",
+    "Prefix": "!",
+    "AutoInject": true,
+    "SafeMode": false,
+    "DrillSpeed": 0.1,
+    "ThemeColor": [0, 255, 127]
   },
-  "auth": {
-    "whitelist_enabled": false,
-    "admin_users": [
-      "Pipe"
-    ]
+  "Discord": {
+    "WebhookURL": "https://discord.com/api/webhooks/1493160419571929129/Py-2cJ2ydyRZ1OwzkVZk8IRM6N8GCrS3qVR8Q99htWyE6Ya5GyPGjAGAHDTX_F8dZKmM",
+    "LogExecutions": true,
+    "LogRemoteFound": true
   },
-  "database": {
-    "target_remotes": [
-      "SayMessageRequest",
-      "DamageRemote",
-      "UpdateHealth",
-      "BurnRemote",
-      "GiveCash",
-      "AdminRemote"
-    ],
-    "auto_scan_on_join": true,
-    "log_level": "Advanced"
+  "DrillTargetRemotes": [
+    "AddCash",
+    "GiveMoney",
+    "AdminRemote",
+    "ExecuteRemote",
+    "RemoteEvent",
+    "Damage",
+    "InflictDamage",
+    "ServerAdmin",
+    "RE",
+    "NetworkRemote"
+  ],
+  "IdentitySpoofer": {
+    "FakeName": "SmileX_Ghost",
+    "FakeUserId": 12345678,
+    "HideOriginalID": true
   },
-  "visuals": {
-    "theme_color": [0, 255, 127],
-    "glow_intensity": 0.5,
-    "console_max_lines": 100
+  "BypassConfig": {
+    "AntiKick": true,
+    "AntiAdmins": true,
+    "NetworkBuffer": 1024,
+    "BypassMethod": "MetatableHook"
+  },
+  "Whitelist": {
+    "Owners": ["Pipe"],
+    "TrustedFriends": []
   }
 }
