@@ -1,12 +1,32 @@
 {
-  "system": {
-    "version": "3.0.0",
+  "system_info": {
+    "name": "Smile-X Ultimate SS++",
+    "version": "3.8.0",
     "developer": "Pipe",
     "status": "Operational",
-    "webhook_enabled": true
+    "prefix": "!"
+  },
+  "auth": {
+    "whitelist_enabled": false,
+    "admin_users": [
+      "Pipe"
+    ]
   },
   "database": {
-    "universal_remotes": ["SayMessageRequest", "DamageRemote", "UpdateHealth"],
-    "saved_places": {}
+    "target_remotes": [
+      "SayMessageRequest",
+      "DamageRemote",
+      "UpdateHealth",
+      "BurnRemote",
+      "GiveCash",
+      "AdminRemote"
+    ],
+    "auto_scan_on_join": true,
+    "log_level": "Advanced"
+  },
+  "visuals": {
+    "theme_color": [0, 255, 127],
+    "glow_intensity": 0.5,
+    "console_max_lines": 100
   }
 }
