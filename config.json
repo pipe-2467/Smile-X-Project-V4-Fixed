@@ -1,0 +1,12 @@
+{
+  "system": {
+    "version": "3.0.0",
+    "developer": "Pipe",
+    "status": "Operational",
+    "webhook_enabled": true
+  },
+  "database": {
+    "universal_remotes": ["SayMessageRequest", "DamageRemote", "UpdateHealth"],
+    "saved_places": {}
+  }
+}
